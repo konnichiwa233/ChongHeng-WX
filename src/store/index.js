@@ -1,15 +1,57 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
+import mutations from '@/store/mutations'
+import getters from '@/store/getters'
+import actions from '@/store/actions'
+
 Vue.use(Vuex)
 
-export default new Vuex.Store({
+const store = new Vuex.Store({
+  // 保存共享数据
   state: {
+    /* 
+    Home页面相关
+     */
+    // 用户信息
+    headImg: 'https://b.yzcdn.cn/vant/icon-demo-1126.png',
+    userName: '加载中...',
+    // 签到框显示隐藏
+    userSignInDialogVisible: false,
+
+
+    /* 
+    User页面相关
+     */
+    // 会员积分显示隐藏变量
+    integralVisible: false,
+    // 会员模块显示隐藏变量
+    memberDialogVisible: false,
+
+    // 个人信息显示隐藏变量
+    informationDialogVisible: false,
+
+    // 消费相关信息
+    consumeMsg: [],
+    //消费列表信息
+    queryInfo: {
+      // 当前页数
+      pagenum: 1,
+      // 当前页面总条数
+      pagesize: 10,
+    },
+
+
+    /* 
+    Water页面相关
+     */
+    // 客服对话框显示隐藏
+    customerDialogVisible: false,
   },
-  mutations: {
-  },
-  actions: {
-  },
-  modules: {
-  }
+
+  mutations,
+  getters,
+  actions,
 })
+
+export default store
