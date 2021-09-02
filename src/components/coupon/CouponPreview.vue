@@ -102,6 +102,7 @@ export default {
   font-weight: 500;
   height: 7vw;
 }
+
 .couDesc {
   position: relative;
   top: -14.5vw;
@@ -129,9 +130,9 @@ export default {
 .button {
   position: relative;
   top: -28vw;
-  left: 71.5vw;
+  left: 64.5vw;
   .van-button {
-    width: 13vw;
+    width: 22vw;
     height: 9vw;
     border-radius: 1vw;
     border-color: #eee;

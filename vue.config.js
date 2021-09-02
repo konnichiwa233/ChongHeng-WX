@@ -64,6 +64,16 @@ module.exports = {
                 target: 'http://39.101.130.49:9528/',
                 changeOrigin: true
             },
+            /* 
+            积分,注册相关
+            */
+            '/':
+            {
+                // target: 'http://cain.gz2vip.idcfengye.com/',
+                target: 'http://testakin02.gz2vip.idcfengye.com/',
+                changeOrigin: true
+            },
+
         }, // string | Object
         before: app => { }
     }

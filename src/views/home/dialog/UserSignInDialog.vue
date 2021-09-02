@@ -48,14 +48,6 @@ export default {
         const data = res.result;
         this.signInDetailList = data.signInDetailList;
         // console.log(this.signInDetailList[0].signStatus);
-
-        for (let i = this.signInDetailList.length - 1; i > 0; i--) {
-          if (this.signInDetailList[i].signStatus === 1) {
-            const nowIntegral = this.signInDetailList[i].rewardMoney;
-            // 发送积分变量
-            this.$bus.$emit("sendIntegral", nowIntegral);
-          }
-        }
       });
     },
   },

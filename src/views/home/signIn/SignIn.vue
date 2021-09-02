@@ -12,6 +12,9 @@
         <van-col span="8">
           <h4>每日签到</h4>
         </van-col>
+        <van-col span="10" offset="3">
+          <span class="totalIntergral">总积分：{{ totalIntergral }} 🤩</span>
+        </van-col>
       </van-row>
       <!-- 主体 -->
       <div class="sign-in-bg">
@@ -48,7 +51,7 @@
 <script>
 import UserSignInDialog from "@/views/home/signIn/dialog/UserSignInDialog.vue";
 
-import { getSignInStatus } from "@/network/homepage";
+import { request3, request6 } from "@/network/request";
 export default {
   components: {
     UserSignInDialog,
@@ -85,12 +88,46 @@ export default {
       circleText: "点击签到",
       // 进度条颜色
       circleColor: "",
+
+      // 今日积分
+      integral: 0,
+      // 总积分
+      totalIntergral: 0,
+      // 传过来的总积分
+      mediTotalIntergral: 0,
+
+      // 0点到打卡的时间秒速
+      dateTime: parseInt(
+        (new Date() -
+          new Date(
+            new Date(new Date().toLocaleDateString()).getTime()
+          ).getTime()) /
+          1000
+      ),
     };
+  },
+
+  watch: {
+    // 监听传过来的分值变化
+    mediTotalIntergral() {
+      this.totalIntergral = this.mediTotalIntergral;
+    },
   },
   created() {
     // cookies签到
     this.setIsSignIn();
+    // 查看总积分
+    this.getTotalIntergral();
+
+    // 查看cookies值
+    console.log("isSign:" + this.$cookies.get("isSignIn"));
+
+    // 接收welfare传来的总积分
+    this.$bus.$on("sendTotalIntegral", (res) => {
+      this.mediTotalIntergral = res;
+    });
   },
+
   methods: {
     // 刷新操作
     onRefresh() {
@@ -108,11 +145,7 @@ export default {
       this.$cookies.set(
         "isSignIn",
         this.isSignIn,
-        new Date(
-          new Date(new Date().toLocaleDateString()).getTime() +
-            24 * 60 * 60 * 1000 -
-            1
-        ).getTime()
+        60 * 60 * 24 - this.dateTime
       );
     },
     setIsSignIn() {
@@ -133,33 +166,113 @@ export default {
       }
     },
 
+    /* 
+    签到相关
+    */
+    // 签到状态请求
+    getSignInStatus() {
+      return request3({
+        url: "./post/sign/in",
+        method: "post",
+        data: {
+          customerId: this.$cookies.get("openid"),
+        },
+      });
+    },
+
     // 点击签到
     signInPlus() {
       if (this.isSignIn === null) {
         // 开始进行签到
-        getSignInStatus();
-        // 签到进度
-        this.nextRate = 100;
-        // 签到的日期
-        this.signInBeforeDate.push(
-          new Date(
-            this.myDate.getFullYear(),
-            this.myDate.getMonth(),
-            this.myDate.getDate()
-          )
-        );
-        // 日历选中的日期
-        this.signInDate = [...this.signInBeforeDate];
-        setTimeout(() => {
-          this.$store.state.userSignInDialogVisible = true;
-          this.circleText = "已签到";
-        }, 250);
-        //
-        this.markIsSignIn();
+        this.getSignInStatus().then((res) => {
+          if (res.code === "1") {
+            // 更新积分
+            this.getPersonalIntegral();
+
+            // 签到进度
+            this.nextRate = 100;
+            // 签到的日期
+            this.signInBeforeDate.push(
+              new Date(
+                this.myDate.getFullYear(),
+                this.myDate.getMonth(),
+                this.myDate.getDate()
+              )
+            );
+            // 日历选中的日期
+            this.signInDate = [...this.signInBeforeDate];
+            setTimeout(() => {
+              this.$store.state.userSignInDialogVisible = true;
+              this.circleText = "已签到";
+            }, 250);
+
+            // cookies签到
+            this.markIsSignIn();
+          } else {
+            this.$toast.fail("无法签到，请检查网络！");
+          }
+        });
       } else {
         this.$toast.fail("今日已签到");
         this.circleColor = "red";
       }
+    },
+
+    /* 
+    积分相关
+     */
+    // 个人今天积分查看
+    getPersonalIntegralRequest() {
+      return request6({
+        url: "./getPointsByOpenIdFromSign",
+        method: "get",
+        headers: { openid: this.$cookies.get("openid") },
+      });
+    },
+    getPersonalIntegral() {
+      this.getPersonalIntegralRequest().then((res) => {
+        this.integral = res.result;
+        if (res.errorCode === "0006") {
+          this.updateIntegral();
+          console.log("个人今日积分：" + this.integral);
+        }
+      });
+    },
+    // 更新积分
+    updateIntegralRequest() {
+      return request6({
+        url: "./updatePoints",
+        methods: "get",
+        headers: { openid: this.$cookies.get("openid") },
+        params: {
+          points: this.integral,
+        },
+      });
+    },
+    updateIntegral() {
+      console.log("将传入更新积分：" + this.integral);
+      this.updateIntegralRequest().then((res) => {
+        if (res.errorCode === "0007") {
+          // 再请求总积分
+          this.getTotalIntergral();
+          console.log("已更新积分：" + this.integral);
+        }
+      });
+    },
+    // 总积分查看
+    getTotalIntergralRequest() {
+      return request6({
+        url: "./getPointsByOpenId",
+        method: "get",
+        headers: { openid: this.$cookies.get("openid") },
+      });
+    },
+    getTotalIntergral() {
+      this.getTotalIntergralRequest().then((res) => {
+        if (res.errorCode === "0006") {
+          this.totalIntergral = res.result;
+        }
+      });
     },
   },
 };
@@ -182,6 +295,31 @@ export default {
       left: 50%;
       transform: translate(-50%);
     }
+  }
+}
+
+span {
+  font-size: 4.5vw;
+}
+.totalIntergral {
+  display: inline-block;
+  color: #fda11f;
+  animation: activeAction 3s infinite;
+  animation-direction: alternate;
+}
+
+@keyframes activeAction {
+  0% {
+    transform: scale(1); /*开始为原始大小*/
+  }
+  25% {
+    transform: scale(1.1); /*放大1.1倍*/
+  }
+  50% {
+    transform: scale(1);
+  }
+  75% {
+    transform: scale(1.1);
   }
 }
 </style>

@@ -32,6 +32,7 @@ export function request1(config) {
 export function request2(config) {
     // 1、创建axios实例
     const instance = axios.create({
+        // baseURL: 'http://cain.gz2vip.idcfengye.com',
         baseURL: 'http://testakin02.gz2vip.idcfengye.com',
         timeout: 10000
     })
@@ -111,6 +112,31 @@ export function request5(config) {
     // 1、创建axios实例
     const instance = axios.create({
         baseURL: '/passbook',
+        timeout: 10000
+    })
+
+    // 2、axios拦截
+    instance.interceptors.request.use(config => {
+        return config
+    }, err => {
+        console.log(err)
+    })
+
+    instance.interceptors.response.use(res => {
+        return res.data
+    }, err => {
+        console.log(err)
+    })
+
+    //3、发送真正的网络请求
+    return instance(config)
+}
+
+// 积分相关
+export function request6(config) {
+    // 1、创建axios实例
+    const instance = axios.create({
+        baseURL: '/',
         timeout: 10000
     })
 

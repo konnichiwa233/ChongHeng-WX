@@ -11,6 +11,11 @@
     <!-- 头部个人信息 -->
     <head-information />
 
+    <!-- 清除cookies -->
+    <!-- <div>{{ "openid:" + this.$cookies.get("openid") }}</div>
+    <div>{{ "isSignIn:" + this.$cookies.get("isSignIn") }}</div>
+    <van-button type="info" @click="clearCookies">清除cookies</van-button> -->
+
     <!-- 每日签到 -->
     <sign-in />
 
@@ -75,14 +80,26 @@ export default {
 
   created() {
     // 请求用户个人信息
-    // this.$store.commit("getUserInfofromWeb");
+    this.$store.commit("getUserInfofromWeb");
   },
   methods: {
+    getcookies() {
+      alert(this.$cookies.get("openid"));
+    },
+
     // 刷新操作
     onRefresh() {
       setTimeout(() => {
         this.isLoading = false;
       }, 1000);
+    },
+
+    clearCookies() {
+      this.$cookies.remove("isSignIn");
+      this.$cookies.remove("openid");
+      if (!this.$cookies.get("openid")) {
+        alert("已删除");
+      }
     },
   },
 };

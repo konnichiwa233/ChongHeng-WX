@@ -1,4 +1,4 @@
-import { request1, request2, request3 } from "./request";
+import { request1, request2 } from "./request";
 
 import store from '@/store'
 /* 
@@ -27,35 +27,12 @@ export function getUserInfofromWeb() {
     return request2({
         url: './GetUserInfofromWeb',
         params: {
-            'openid': getCookies()
+            'openid': getCookiesByLogo()
         }
     })
 
 }
 
-/*
-签到相关请求
- */
-// 签到状态
-export function getSignInStatus() {
-    return request3({
-        url: './post/sign/in',
-        method: 'post',
-        data: {
-            customerId: 255
-        }
-    })
-}
-// 签到详情
-export function getSignInDetails() {
-    return request3({
-        url: './list/sign/in/detail',
-        method: 'post',
-        data: {
-            customerId: 255
-        }
-    })
-}
 
 
 

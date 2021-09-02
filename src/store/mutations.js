@@ -5,16 +5,26 @@ export default {
     // 请求用户个人信息
     getUserInfofromWeb(state) {
         getUserInfofromWeb().then(res => {
-            // 转义字符替换
-            const json = res.result.replace(/\\\//g, '/')
-            // console.log(json);
-            // 字符串转为json对象
-            const obj = JSON.parse(json)
-            // console.log(obj);
-            // console.log(typeof (obj));
-            state.headImg = obj.headimgurl
-            state.userName = obj.nickname
-            // console.log(state.headImg);
+            // alert(res.errorCode)
+            if (res.errorCode === '0006') {
+
+                // 转义字符替换
+                const json = res.result.replace(/\\\//g, '/')
+                // console.log(json);
+                // 字符串转为json对象
+                const obj = JSON.parse(json)
+                // console.log(obj);
+                // console.log(typeof (obj));
+                state.headImg = obj.headimgurl
+                state.userName = obj.nickname
+                // console.log(state.headImg);
+
+            } else {
+
+                window.location.href =
+                    "http://testakin02.gz2vip.idcfengye.com/redirectFromOpenid";
+            }
+
         })
     },
     // 请求消费相关信息

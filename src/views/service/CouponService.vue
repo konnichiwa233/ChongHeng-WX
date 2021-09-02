@@ -121,6 +121,15 @@
         />
       </van-popup>
 
+      <!-- 积分兑换 -->
+      <van-field
+        v-model="points"
+        name="points"
+        label="积分兑换"
+        placeholder="填写数字"
+        :rules="[{ pattern: checkNum, message: '请填写正整数' }]"
+      />
+
       <!-- hasToken -->
       <van-field
         name="hasToken"
@@ -189,7 +198,7 @@
       <template v-slot:couName>{{ couName }}</template>
       <template v-slot:couDesc>{{ couDesc }}</template>
       <template v-slot:endTime>{{ "截止时间至：" + endTime }}</template>
-      <template v-slot:button>{{ "领取" }}</template>
+      <template v-slot:button>{{ points + "积分兑换" }}</template>
     </coupon-preview>
   </div>
 </template>
@@ -244,6 +253,8 @@ export default {
       // 默认选中日期
       currentDate: new Date(),
 
+      // 积分兑换
+      points: "",
       // hasToKen
       hasToken: "",
       // 店铺ID
@@ -301,6 +312,7 @@ export default {
           summary: this.couSummary,
           title: this.couName,
           icon: this.icon,
+          points: this.points,
         },
       });
     },

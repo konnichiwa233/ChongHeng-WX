@@ -78,6 +78,9 @@
       @confirm="useCouponConfirm()"
     >
     </van-dialog>
+
+    <!-- 二维码对话框 -->
+    <q-rcode />
   </div>
 </template>
 
@@ -86,9 +89,11 @@ import { formatDate } from "@/assets/js/formatDate";
 import { request5 } from "@/network/request";
 
 import CouponPreview from "@/components/coupon/CouponPreview";
+import QRcode from "./QRcode.vue";
 
 export default {
-  components: { CouponPreview },
+  name: "CouponStore",
+  components: { CouponPreview, QRcode },
   data() {
     return {
       // 默认活跃索引
@@ -107,6 +112,11 @@ export default {
     this.getNotUsedCoupon();
     // 请求已使用优惠券
     this.getUsedCoupon();
+
+    // 接收未使用优惠券列表
+    this.$bus.$on("sendNotUsedCouponInfo", (res) => {
+      this.NotUsedCouponInfo = res;
+    });
   },
 
   methods: {
@@ -116,7 +126,7 @@ export default {
         url: "./userpassinfo",
         method: "get",
         params: {
-          userId: 1,
+          userId: this.$cookies.get("openid"),
         },
       });
     },
@@ -152,8 +162,11 @@ export default {
       return request5({
         url: "./userusepass",
         method: "post",
+        headers: {
+          openid: this.$cookies.get("openid"),
+        },
         data: {
-          userId: "1",
+          userId: this.$cookies.get("openid"),
           templateId: this.notUsedCouponInfo[this.index].pass.templateId,
         },
       });
@@ -167,6 +180,10 @@ export default {
           // 重新请求
           this.getNotUsedCoupon();
           this.getUsedCoupon();
+          this.$store.state.QRcodeVisible = true;
+        } else if (res.code === -1) {
+          this.$toast.fail("未检测到账户存在,请先注册!");
+          this.$router.push("/user/memberRegister");
         } else {
           this.$toast.fail("使用优惠券失败");
         }
@@ -180,7 +197,7 @@ export default {
         url: "./userusedpassinfo",
         method: "get",
         params: {
-          userId: 1,
+          userId: this.$cookies.get("openid"),
         },
       });
     },

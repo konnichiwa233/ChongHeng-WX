@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
+// 路由懒加载，提升运行效率
 const Home = () => import('@/views/home/Home');
 
 const User = () => import('@/views/user/User');

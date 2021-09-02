@@ -92,6 +92,8 @@
 </template>
 
 <script>
+import { request6 } from "@/network/request";
+
 export default {
   data() {
     return {
@@ -283,6 +285,9 @@ export default {
     // 提交表单
     onSubmit(values) {
       console.log("submit", values);
+      this.postRegister();
+      this.$toast.success("恭喜你,已注册!");
+      this.$router.push("/user");
     },
     // 确定专业
     confirmMajor(major) {
@@ -291,10 +296,32 @@ export default {
     },
     // 确定出生日
     confirmBirth(date) {
-      this.birth = `${date.getFullYear()}/${
+      this.birth = `${date.getFullYear()}-${
         date.getMonth() + 1
-      }/${date.getDate()}`;
+      }-${date.getDate()} 00:00:00`;
       this.showCalendar = false;
+    },
+
+    // 提交注册信息请求
+    postRegisterRequest() {
+      return request6({
+        url: "./register",
+        method: "post",
+        headers: { openid: this.$cookies.get("openid") },
+        data: {
+          name: this.username,
+          sex: this.radio,
+          subject: this.major,
+          nickname: this.username,
+          mobile: this.mobile,
+          birthday: this.birth,
+        },
+      });
+    },
+    postRegister() {
+      this.postRegisterRequest().then((res) => {
+        console.log(res);
+      });
     },
   },
 };

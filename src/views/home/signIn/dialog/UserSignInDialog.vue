@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { getSignInDetails } from "@/network/homepage";
+import { request3 } from "@/network/request";
 
 export default {
   data() {
@@ -42,20 +42,23 @@ export default {
   created() {},
 
   methods: {
+    // 用户签到详情请求
+    getSignInDetailsRequest() {
+      return request3({
+        url: "./list/sign/in/detail",
+        method: "post",
+        data: {
+          customerId: this.$cookies.get("openid"),
+        },
+      });
+    },
+
     // 用户签到详情
     getSignInDetails() {
-      getSignInDetails().then((res) => {
+      this.getSignInDetailsRequest().then((res) => {
         const data = res.result;
         this.signInDetailList = data.signInDetailList;
         // console.log(this.signInDetailList[0].signStatus);
-
-        for (let i = this.signInDetailList.length - 1; i > 0; i--) {
-          if (this.signInDetailList[i].signStatus === 1) {
-            const nowIntegral = this.signInDetailList[i].rewardMoney;
-            // 发送积分变量
-            this.$bus.$emit("sendIntegral", nowIntegral);
-          }
-        }
       });
     },
   },

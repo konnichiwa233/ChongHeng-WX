@@ -34,7 +34,7 @@
             }}</template
           >
           <template v-slot:button>
-            {{ "领取" }}
+            {{ couponInfo[i].passTemplate.points + "积分兑换" }}
           </template>
         </coupon-preview>
       </div>
@@ -42,8 +42,8 @@
     <!-- 领取优惠券对话框 -->
     <van-dialog
       v-model="receiveCouponDialogVisible"
-      message="是否领取优惠券"
       show-cancel-button
+      message="是否使用积分进行兑换？"
       @cancel="receiveCouponDialogVisible = false"
       @confirm="receiveCouponConfirm()"
     >
@@ -53,7 +53,7 @@
 
 <script>
 import { formatDate } from "@/assets/js/formatDate";
-import { request5 } from "@/network/request";
+import { request5, request6 } from "@/network/request";
 
 import CouponPreview from "@/components/coupon/CouponPreview.vue";
 export default {
@@ -66,12 +66,16 @@ export default {
       couponInfo: [],
       index: 0,
       receiveCouponDialogVisible: false,
+      // 积分信息
+      totalIntergral: 0,
     };
   },
 
   created() {
     // 请求优惠券
     this.getCoupon();
+    // 请求积分
+    this.getTotalIntergral();
   },
   methods: {
     // 请求优惠券
@@ -80,7 +84,7 @@ export default {
         url: "./inventoryinfo",
         method: "get",
         params: {
-          userId: 1,
+          userId: this.$cookies.get("openid"),
         },
       });
     },
@@ -94,16 +98,16 @@ export default {
     receiveCouponDialog(i) {
       this.index = i;
       console.log("索引值：" + this.index);
-      console.log(this.couponInfo[this.index].passTemplate.id + "数据类型：");
-      console.log(typeof this.couponInfo[this.index].passTemplate.id);
-      console.log(
-        this.couponInfo[this.index].passTemplate.title + "数据类型："
-      );
-      console.log(typeof this.couponInfo[this.index].passTemplate.title);
-      console.log(
-        this.couponInfo[this.index].passTemplate.hasToken + "数据类型："
-      );
-      console.log(typeof this.couponInfo[this.index].passTemplate.hasToken);
+      // console.log(this.couponInfo[this.index].passTemplate.id + "数据类型：");
+      // console.log(typeof this.couponInfo[this.index].passTemplate.id);
+      // console.log(
+      //   this.couponInfo[this.index].passTemplate.title + "数据类型："
+      // );
+      // console.log(typeof this.couponInfo[this.index].passTemplate.title);
+      // console.log(
+      //   this.couponInfo[this.index].passTemplate.hasToken + "数据类型："
+      // );
+      // console.log(typeof this.couponInfo[this.index].passTemplate.hasToken);
       this.receiveCouponDialogVisible = true;
     },
     // 领取优惠券请求
@@ -111,8 +115,11 @@ export default {
       return request5({
         url: "./gainpasstemplate",
         method: "post",
+        headers: {
+          openid: this.$cookies.get("openid"),
+        },
         data: {
-          userId: "1",
+          userId: this.$cookies.get("openid"),
           passTemplate: {
             id: parseInt(this.couponInfo[this.index].passTemplate.id),
             title: this.couponInfo[this.index].passTemplate.title,
@@ -123,17 +130,76 @@ export default {
     },
     // 确认领取优惠券
     receiveCouponConfirm() {
-      this.receiveCouponRequest().then((res) => {
-        console.log(res);
-        if (res.errorCode === 0) {
-          this.$toast.success("已领取优惠券");
-          // 重新请求
-          this.getCoupon();
-        } else {
-          this.$toast.fail("领取优惠券失败");
+      if (
+        this.totalIntergral >= this.couponInfo[this.index].passTemplate.points
+      ) {
+        // 优惠券领取请求
+        this.receiveCouponRequest().then((res) => {
+          console.log(res);
+          if (res.errorCode === 0) {
+            this.$toast.success("已领取优惠券");
+            // 更新积分
+            this.updateIntegral();
+            // 重新请求优惠券
+            this.getCoupon();
+            // 请求未使用优惠券列表
+            this.getNotUsedCouponRequest();
+          } else if (res.code === -1) {
+            this.$toast.fail("未检测到账户存在,请先注册!");
+            this.$router.push("/user/memberRegister");
+          } else {
+            this.$toast.fail("领取优惠券失败");
+          }
+        });
+      } else {
+        this.$toast.fail("积分不足，无法兑换！");
+      }
+
+      this.receiveCouponDialogVisible = false;
+    },
+
+    // 更新积分
+    updateIntegralRequest() {
+      return request6({
+        url: "./updatePoints",
+        methods: "get",
+        headers: {
+          openid: this.$cookies.get("openid"),
+        },
+        params: {
+          points: -this.couponInfo[this.index].passTemplate.points,
+        },
+      });
+    },
+    updateIntegral() {
+      console.log(
+        "将传入更新积分：" + -this.couponInfo[this.index].passTemplate.points
+      );
+      this.updateIntegralRequest().then((res) => {
+        console.log(
+          "已更新积分：" + -this.couponInfo[this.index].passTemplate.points
+        );
+        if (res.errorCode === "0007") {
+          // 再请求总积分
+          this.getTotalIntergral();
         }
       });
-      this.receiveCouponDialogVisible = false;
+    },
+    // 总积分查看
+    getTotalIntergralRequest() {
+      return request6({
+        url: "./getPointsByOpenId",
+        method: "get",
+        headers: { openid: this.$cookies.get("openid") },
+      });
+    },
+    getTotalIntergral() {
+      this.getTotalIntergralRequest().then((res) => {
+        this.totalIntergral = res.result;
+        // 发送总积分
+        this.$bus.$emit("sendTotalIntegral", this.totalIntergral);
+        console.log("总积分：" + this.totalIntergral);
+      });
     },
   },
 

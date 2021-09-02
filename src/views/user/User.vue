@@ -13,17 +13,13 @@
     <!-- 消费相关 -->
     <van-cell-group inset>
       <van-cell title="优惠券查询" is-link to="/user/couponStore" />
-      <van-cell title="消费记录" is-link to="/user/consumeHistory" />
+      <van-cell title="消费记录" is-link to="/user/consumeHistory" v-if="0" />
     </van-cell-group>
 
     <!-- 会员相关 -->
     <van-cell-group inset>
       <van-cell title="注册会员" is-link to="/user/memberRegister" />
-      <van-cell
-        title="积分详情"
-        is-link
-        @click="$store.state.integralVisible = true"
-      />
+
       <van-cell
         title="会员特权"
         is-link
@@ -42,8 +38,6 @@
       <van-cell title="在线客服" is-link />
     </van-cell-group>
 
-    <!-- 会员积分弹出框 -->
-    <integral-dialog />
     <!-- 会员模块弹出框 -->
     <member-dialog />
 
@@ -57,7 +51,6 @@ import HomePic from "@/components/homePic/HomePic.vue";
 
 import HeadInformation from "@/components/headInformation/HeadInformation.vue";
 
-import IntegralDialog from "@/views/user/dialog/IntegralDialog.vue";
 import MemberDialog from "@/views/user/dialog/MemberDialog.vue";
 
 import InformationDialog from "@/views/user/dialog/InformationDialog.vue";
@@ -68,7 +61,6 @@ export default {
 
     HeadInformation,
 
-    IntegralDialog,
     MemberDialog,
 
     InformationDialog,
@@ -85,6 +77,8 @@ export default {
 
   created() {
     this.$store.commit("getConsumeMsg");
+
+    // console.log("had changed~");
   },
   methods: {
     // 刷新相关

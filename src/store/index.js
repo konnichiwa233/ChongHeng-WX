@@ -23,8 +23,9 @@ const store = new Vuex.Store({
     /* 
     User页面相关
      */
-    // 会员积分显示隐藏变量
-    integralVisible: false,
+    // 二维码显示隐藏变量
+    QRcodeVisible: false,
+
     // 会员模块显示隐藏变量
     memberDialogVisible: false,
 
